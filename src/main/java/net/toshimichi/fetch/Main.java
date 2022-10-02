@@ -36,15 +36,16 @@ public class Main extends PlaceholderExpansion {
         return LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
     }
 
-    private String getPrimaryCache(String name, int expire) throws IOException {
+    private String primaryCache(String name, int expire) {
         CacheData cacheData = primaryCache.get(name);
         if (cacheData == null) return null;
         if (isCacheExpired(cacheData.getLastModified(), expire)) return null;
         return cacheData.getContents();
     }
 
-    private String getSecondaryCache(String name, int expire, Path path) throws IOException {
-        if (!Files.exists(path) || isCacheExpired(getLastModified(path), expire)) return null;
+    private String secondaryCache(String name, int expire, Path path) throws IOException {
+        if (!Files.exists(path)) return null;
+        if (isCacheExpired(getLastModified(path), expire)) return null;
 
         String contents = Files.readString(path);
 
@@ -90,11 +91,11 @@ public class Main extends PlaceholderExpansion {
             }
 
             // cache
-            String contents = getPrimaryCache(name, expire);
+            String contents = primaryCache(name, expire);
             if (contents != null) return contents;
 
             Path path = cachePath.resolve(name);
-            contents = getSecondaryCache(name, expire, path);
+            contents = secondaryCache(name, expire, path);
             if (contents != null) return contents;
 
             // fetch
