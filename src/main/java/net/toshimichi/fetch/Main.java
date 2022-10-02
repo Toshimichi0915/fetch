@@ -41,7 +41,7 @@ public class Main extends PlaceholderExpansion {
         return cacheData.getContents();
     }
 
-    private String secondaryCache(String name, URL url, int expire) throws IOException {
+    private String secondaryCache(String name, int expire, URL url) throws IOException {
         Path path = cachePath.resolve(name);
         if (!Files.exists(path) || isFileExpired(getLastModified(path), expire)) {
             Files.createDirectories(cachePath);
@@ -69,7 +69,7 @@ public class Main extends PlaceholderExpansion {
 
             String contents = primaryCache(name, expire);
             if (contents != null) return contents;
-            return secondaryCache(name, url, expire);
+            return secondaryCache(name, expire, url);
         } catch (Exception e) {
             e.printStackTrace();
             return "ERROR";

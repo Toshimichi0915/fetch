@@ -1,6 +1,6 @@
 # fetch
 
-A placeholder API for fetching data from a specified URL.
+A placeholder API expansion for fetching data from a specified URL.
 
 ## Usage
 
@@ -12,7 +12,7 @@ A placeholder API for fetching data from a specified URL.
 | --- | --- |
 | name | The name of this data, which will be used for caching data. |
 | cache | The cache duration (tick).|
-| url | The URL |
+| url | The URL to fetch data from. |
 
 ## Example
 
@@ -20,4 +20,4 @@ A placeholder API for fetching data from a specified URL.
 %fetch_ serverStatus 72000 https://getserverdata.com %
 ```
 
-this example will fetch data from `https://getserverdata.com`, save as serverStatus, and the cache will last for 1 hour (72000 = 20 (tick) * 60 (seconds) * 60 (minutes)).
+This example will fetch data from `https://getserverdata.com`, save it as serverStatus, and the cache will last for 1 hour (72000 = 20 (tick) * 60 (seconds) * 60 (minutes)).
