@@ -31,7 +31,7 @@ public class Main extends PlaceholderExpansion {
     public static byte[] readAllBytes(InputStream in) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             int len;
-            byte[] buf = new byte[8096];
+            byte[] buf = new byte[8192];
             while ((len = in.read(buf)) != -1) {
                 out.write(buf, 0, len);
             }
