@@ -5,14 +5,14 @@ A placeholder API expansion for fetching data from a specified URL.
 ## Usage
 
 ```
-%fetch_ name cache url %
+%fetch_ name expiary url %
 ```
 
-| Name | Description |
-| --- | --- |
-| name | The name of this data, which will be used for caching data. |
-| cache | The cache duration (tick).|
-| url | The URL to fetch data from. |
+| Name    | Description                                                 |
+|---------|-------------------------------------------------------------|
+| name    | The name of this data, which will be used for caching data. |
+| expiary | The cache duration (tick).                                  |
+| url     | The URL to fetch data from.                                 |
 
 ## Example
 
