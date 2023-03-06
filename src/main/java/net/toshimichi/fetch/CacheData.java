@@ -4,15 +4,15 @@ import java.time.LocalDateTime;
 
 public class CacheData {
 
-    private final String contents;
+    private final byte[] contents;
     private final LocalDateTime lastModified;
 
-    public CacheData(String contents, LocalDateTime lastModified) {
+    public CacheData(byte[] contents, LocalDateTime lastModified) {
         this.contents = contents;
         this.lastModified = lastModified;
     }
 
-    public String getContents() {
+    public byte[] getContents() {
         return contents;
     }
 

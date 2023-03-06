@@ -3,12 +3,14 @@ package net.toshimichi.fetch;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,13 +24,25 @@ public class Main extends PlaceholderExpansion {
 
     private static final Pattern PARAM_PATTERN = Pattern.compile("^ *?([^ ]+?) +?([^ ]+?) +?([^ ]+?) *?$");
     private static final Pattern FILE_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$");
-    private static final Path cachePath = Path.of("./fetch");
+    private static final Path cachePath = Paths.get("./fetch");
 
     private final Map<String, CacheData> primaryCache = new HashMap<>();
 
+    public static byte[] readAllBytes(InputStream in) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            int len;
+            byte[] buf = new byte[8192];
+            while ((len = in.read(buf)) != -1) {
+                out.write(buf, 0, len);
+            }
+
+            return out.toByteArray();
+        }
+    }
+
     private boolean isCacheExpired(LocalDateTime dateTime, int expire) {
         if (expire < 0) return false;
-        return Duration.between(dateTime, LocalDateTime.now()).toSeconds() * 20 > expire;
+        return Duration.between(dateTime, LocalDateTime.now()).toMillis() / 50 > expire;
     }
 
     private LocalDateTime getLastModified(Path path) throws IOException {
@@ -36,18 +50,18 @@ public class Main extends PlaceholderExpansion {
         return LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
     }
 
-    private String primaryCache(String name, int expire) {
+    private byte[] primaryCache(String name, int expire) {
         CacheData cacheData = primaryCache.get(name);
         if (cacheData == null) return null;
         if (isCacheExpired(cacheData.getLastModified(), expire)) return null;
         return cacheData.getContents();
     }
 
-    private String secondaryCache(String name, int expire, Path path) throws IOException {
+    private byte[] secondaryCache(String name, int expire, Path path) throws IOException {
         if (!Files.exists(path)) return null;
         if (isCacheExpired(getLastModified(path), expire)) return null;
 
-        String contents = Files.readString(path);
+        byte[] contents = Files.readAllBytes(path);
 
         // insert data into primary cache
         primaryCache.put(name, new CacheData(contents, getLastModified(path)));
@@ -56,19 +70,19 @@ public class Main extends PlaceholderExpansion {
     }
 
     private String fetch(String name, Path path, URL url) throws IOException {
-        String contents;
+        byte[] contents;
         try (InputStream in = url.openStream()) {
             Files.createDirectories(cachePath);
-            contents = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            contents = readAllBytes(in);
         }
 
         // insert data into primary cache
         primaryCache.put(name, new CacheData(contents, LocalDateTime.now()));
 
         // insert data into secondary cache
-        Files.writeString(path, contents);
+        Files.write(path, contents);
 
-        return contents;
+        return new String(contents);
     }
 
     @Override
@@ -91,12 +105,12 @@ public class Main extends PlaceholderExpansion {
             }
 
             // cache
-            String contents = primaryCache(name, expire);
-            if (contents != null) return contents;
+            byte[] contents = primaryCache(name, expire);
+            if (contents != null) return new String(contents, StandardCharsets.UTF_8);
 
             Path path = cachePath.resolve(name);
             contents = secondaryCache(name, expire, path);
-            if (contents != null) return contents;
+            if (contents != null) return new String(contents, StandardCharsets.UTF_8);
 
             // fetch
             return fetch(name, path, url);
@@ -119,6 +133,6 @@ public class Main extends PlaceholderExpansion {
 
     @Override
     public String getVersion() {
-        return "1.0.1";
+        return "1.0.2";
     }
 }
