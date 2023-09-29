@@ -24,7 +24,7 @@ public class Main extends PlaceholderExpansion {
 
     private static final Pattern PARAM_PATTERN = Pattern.compile("^ *?([^ ]+?) +?([^ ]+?) +?([^ ]+?) *?$");
     private static final Pattern FILE_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$");
-    private static final Path cachePath = Paths.get("./fetch");
+    private static Path cachePath = Paths.get("./fetch");
 
     private final Map<String, CacheData> primaryCache = new HashMap<>();
 
@@ -87,6 +87,15 @@ public class Main extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String param) {
+        if(param.startsWith("setcachepath")) {
+            String[] params = param.split(" ");
+            if(params.length > 1) {
+                cachePath = Paths.get(param.split(" ")[1]);
+                return cachePath.toString();
+            } else {
+                return "Invalid path";
+            }
+        }
         Matcher matcher = PARAM_PATTERN.matcher(param);
         if (!matcher.find()) return null;
         try {
