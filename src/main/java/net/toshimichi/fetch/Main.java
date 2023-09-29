@@ -28,35 +28,21 @@ public class Main extends PlaceholderExpansion {
 
     private final Map<String, CacheData> primaryCache = new HashMap<>();
 
-    public static byte[] readAllBytes(InputStream inputStream) throws IOException {
-        final int bufLen = 1024;
-        byte[] buf = new byte[bufLen];
-        int readLen;
-        IOException exception = null;
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            while ((readLen = inputStream.read(buf, 0, bufLen)) != -1)
-                outputStream.write(buf, 0, readLen);
-
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            exception = e;
-            throw e;
-        } finally {
-            if (exception == null) inputStream.close();
-            else try {
-                inputStream.close();
-            } catch (IOException e) {
-                exception.addSuppressed(e);
+    public static byte[] readAllBytes(InputStream in) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            int len;
+            byte[] buf = new byte[8192];
+            while ((len = in.read(buf)) != -1) {
+                out.write(buf, 0, len);
             }
+
+            return out.toByteArray();
         }
     }
 
     private boolean isCacheExpired(LocalDateTime dateTime, int expire) {
         if (expire < 0) return false;
-        return (Duration.between(dateTime, LocalDateTime.now()).toMinutes() / 60) * 20 > expire;
+        return Duration.between(dateTime, LocalDateTime.now()).toMillis() / 50 > expire;
     }
 
     private LocalDateTime getLastModified(Path path) throws IOException {
@@ -129,11 +115,11 @@ public class Main extends PlaceholderExpansion {
 
             // cache
             byte[] contents = primaryCache(name, expire);
-            if (contents != null) return new String(contents);
+            if (contents != null) return new String(contents, StandardCharsets.UTF_8);
 
             Path path = cachePath.resolve(name);
             contents = secondaryCache(name, expire, path);
-            if (contents != null) return new String(contents);
+            if (contents != null) return new String(contents, StandardCharsets.UTF_8);
 
             // fetch
             return fetch(name, path, url);
