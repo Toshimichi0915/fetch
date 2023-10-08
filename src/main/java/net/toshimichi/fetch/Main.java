@@ -69,7 +69,7 @@ public class Main extends PlaceholderExpansion {
         return contents;
     }
 
-    private String fetch(String name, Path path, URL url) throws IOException {
+    private byte[] fetch(String name, Path path, URL url) throws IOException {
         byte[] contents;
         try (InputStream in = url.openStream()) {
             Files.createDirectories(cachePath);
@@ -82,7 +82,7 @@ public class Main extends PlaceholderExpansion {
         // insert data into secondary cache
         Files.write(path, contents);
 
-        return new String(contents);
+        return contents;
     }
 
     @Override
@@ -112,9 +112,8 @@ public class Main extends PlaceholderExpansion {
             contents = secondaryCache(name, expire, path);
             if (contents != null) return new String(contents, StandardCharsets.UTF_8);
 
-            // fetch
-            return fetch(name, path, url);
-
+            contents = fetch(name, path, url);
+            return new String(contents, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
             return "ERROR";
