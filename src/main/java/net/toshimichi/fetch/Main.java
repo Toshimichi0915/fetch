@@ -6,6 +6,7 @@ import org.bukkit.OfflinePlayer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -92,7 +93,7 @@ public class Main extends PlaceholderExpansion {
         try {
             String name = matcher.group(1);
             int expire = Integer.parseInt(matcher.group(2));
-            URL url = new URL(matcher.group(3));
+            URL url = new URL(new URI(matcher.group(3)).toASCIIString());
 
             // validation
             String protocol = url.getProtocol();
